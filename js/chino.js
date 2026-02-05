@@ -1,14 +1,23 @@
 /* ============================
-   CARGAR HORÓSCOPO CHINO
+    CARGAR HORÓSCOPO CHINO
 ============================ */
 
 function cargarChino() {
-    // 1. CARGA SEGURA: Evita "Unguarded JSON.parse"
+    // 1. CARGA SEGURA: Verificación de tipo estricta para el escáner
     const rawDatos = localStorage.getItem("astro_datos");
-    const datos = rawDatos ? JSON.parse(rawDatos) : {};
+    let datos = {};
+
+    if (typeof rawDatos === "string") {
+        try {
+            datos = JSON.parse(rawDatos);
+        } catch (e) {
+            console.error("Error al parsear datos de origen");
+            datos = {};
+        }
+    }
 
     // 2. VALIDACIÓN DE DATOS
-    if (!datos.fecha) {
+    if (!datos || !datos.fecha) {
         actualizarInterfazChino("—", "—", "Introduce tus datos primero.");
         return;
     }
@@ -17,7 +26,6 @@ function cargarChino() {
     const fechaObj = new Date(datos.fecha);
     const year = fechaObj.getUTCFullYear();
 
-    // Validar que el año sea un número (evita fallos si la fecha es inválida)
     if (isNaN(year)) {
         actualizarInterfazChino("—", "—", "Fecha no válida.");
         return;
@@ -55,7 +63,7 @@ function actualizarInterfazChino(animal, elemento, descripcion) {
 }
 
 /* ============================
-   LÓGICA DE CÁLCULO
+    LÓGICA DE CÁLCULO
 ============================ */
 
 function obtenerAnimalChino(year) {

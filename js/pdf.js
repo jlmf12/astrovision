@@ -1,5 +1,5 @@
 /* ============================
-   GENERAR PDF ASTROVISIÓN
+    GENERAR PDF ASTROVISIÓN
 ============================ */
 
 // Ruta absoluta (estable en PWA)
@@ -11,18 +11,27 @@ async function generarPDF(nombreUsuario) {
 
     // 1. Cargar plantilla
     const response = await fetch(RUTA_PDF);
-    const template = await response.text();
+    const templateText = await response.text();
 
-    // 2. Contenedor invisible
+    // 2. Procesar plantilla de forma segura (Evita el error en línea 22)
+    const parser = new DOMParser();
+    const docTemplate = parser.parseFromString(templateText, 'text/html');
+    const contenidoTemplate = docTemplate.body.firstChild;
+
+    // 3. Contenedor invisible
     const contenedor = document.createElement("div");
     contenedor.style.position = "fixed";
     contenedor.style.top = "-9999px";
     contenedor.style.left = "-9999px";
     contenedor.style.width = "800px";
-    contenedor.innerHTML = template;
+    
+    // En lugar de innerHTML, clonamos el nodo procesado
+    if (contenidoTemplate) {
+        contenedor.appendChild(contenidoTemplate.cloneNode(true));
+    }
     document.body.appendChild(contenedor);
 
-    // 3. Leer datos reales de la app
+    // 4. Leer datos reales de la app
     const zodiaco = JSON.parse(localStorage.getItem("astro_zodiaco") || "{}");
     const luna = JSON.parse(localStorage.getItem("astro_luna") || "{}");
     const numero = JSON.parse(localStorage.getItem("astro_numero") || "{}");
@@ -45,7 +54,7 @@ async function generarPDF(nombreUsuario) {
         cartaDiaTexto: tarot.significado || "—"
     };
 
-    // 4. Inyectar datos (seguro)
+    // 5. Inyectar datos (seguro con textContent)
     setText(contenedor, "#pdf-nombre-usuario", datos.nombre);
     setText(contenedor, "#pdf-signo-solar", datos.signoSolar);
     setText(contenedor, "#pdf-signo-solar-texto", datos.signoSolarTexto);
@@ -56,12 +65,15 @@ async function generarPDF(nombreUsuario) {
     setText(contenedor, "#pdf-carta-dia", datos.cartaDia);
     setText(contenedor, "#pdf-carta-dia-texto", datos.cartaDiaTexto);
 
-    // Compatibilidades
+    // Compatibilidades (Corregido para evitar innerHTML)
     const nodoCompat = contenedor.querySelector("#pdf-compatibilidades");
     if (nodoCompat) {
-        nodoCompat.innerHTML = "";
+        nodoCompat.replaceChildren(); // Limpia de forma segura
         if (datos.compatibilidades.length === 0) {
-            nodoCompat.innerHTML = '<span class="tag">Sin datos</span>';
+            const spanEmpty = document.createElement("span");
+            spanEmpty.className = "tag";
+            spanEmpty.textContent = "Sin datos";
+            nodoCompat.appendChild(spanEmpty);
         } else {
             datos.compatibilidades.forEach(c => {
                 const span = document.createElement("span");
@@ -75,7 +87,7 @@ async function generarPDF(nombreUsuario) {
     // Tránsitos
     const nodoTransitos = contenedor.querySelector("#pdf-transitos");
     if (nodoTransitos) {
-        nodoTransitos.innerHTML = "";
+        nodoTransitos.replaceChildren(); // Limpia de forma segura
         datos.transitos.forEach(t => {
             const li = document.createElement("li");
             li.textContent = t;
@@ -83,7 +95,7 @@ async function generarPDF(nombreUsuario) {
         });
     }
 
-    // 5. Renderizar a imagen
+    // 6. Renderizar a imagen
     const canvas = await html2canvas(contenedor, {
         scale: 2,
         useCORS: true
@@ -91,7 +103,7 @@ async function generarPDF(nombreUsuario) {
 
     const imgData = canvas.toDataURL("image/png");
 
-    // 6. Crear PDF
+    // 7. Crear PDF
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF("p", "mm", "a4");
 
@@ -101,12 +113,12 @@ async function generarPDF(nombreUsuario) {
     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
     pdf.save(nombreArchivo);
 
-    // 7. Limpiar
+    // 8. Limpiar
     document.body.removeChild(contenedor);
 }
 
 /* ============================
-   UTILIDAD SEGURA
+    UTILIDAD SEGURA
 ============================ */
 
 function setText(contenedor, selector, texto) {

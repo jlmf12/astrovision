@@ -2,82 +2,74 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AstroVisión: Tu guía personal de astrología, tarot y numerología.">
-  
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AstroVisión</title>
+    <title>AstroVisión - Tu Guía Astrológica</title>
 
-    <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
-    <!-- Botón menú -->
-    <div id="menu-btn" onclick="toggleMenu()">☰</div>
-    <div id="overlay" onclick="toggleMenu()"></div>
+    <button id="menu-btn" aria-label="Abrir menú">☰</button>
+    <div id="overlay" role="presentation"></div>
 
-    <!-- MENÚ LATERAL -->
     <nav id="side-menu">
-
         <h3>AstroVisión</h3>
 
         <a href="index.html">
-            <img src="img/icons/home.png" class="menu-icon"> Inicio
+            <img src="img/icons/home.png" class="menu-icon" alt=""> Inicio
         </a>
 
         <a href="pages/formulario.html">
-            <img src="img/icons/perfil.png" class="menu-icon"> Datos
+            <img src="img/icons/perfil.png" class="menu-icon" alt=""> Datos
         </a>
 
         <a href="pages/zodiaco.html">
-            <img src="img/icons/aries.png" class="menu-icon"> Signo Zodiacal
+            <img src="img/icons/aries.png" class="menu-icon" alt=""> Signo Zodiacal
         </a>
 
         <a href="pages/luna.html">
-            <img src="img/icons/luna.png" class="menu-icon"> Luna
+            <img src="img/icons/luna.png" class="menu-icon" alt=""> Luna
         </a>
 
         <a href="pages/numerologia.html">
-            <img src="img/icons/numero.png" class="menu-icon"> Numerología
+            <img src="img/icons/numero.png" class="menu-icon" alt=""> Numerología
         </a>
 
         <a href="pages/chino.html">
-            <img src="img/icons/dragon.png" class="menu-icon"> Horóscopo Chino
+            <img src="img/icons/dragon.png" class="menu-icon" alt=""> Horóscopo Chino
         </a>
 
         <a href="pages/compatibilidad.html">
-            <img src="img/icons/corazón.png" class="menu-icon"> Compatibilidades
+            <img src="img/icons/corazón.png" class="menu-icon" alt=""> Compatibilidades
         </a>
 
         <a href="pages/transitos.html">
-            <img src="img/icons/planeta.png" class="menu-icon"> Tránsitos
+            <img src="img/icons/planeta.png" class="menu-icon" alt=""> Tránsitos
         </a>
 
         <a href="pages/tarot.html">
-            <img src="img/icons/tarot.png" class="menu-icon"> Tarot
+            <img src="img/icons/tarot.png" class="menu-icon" alt=""> Tarot
         </a>
 
         <a href="pages/informe.html">
-            <img src="img/icons/informe.png" class="menu-icon"> Informe
+            <img src="img/icons/informe.png" class="menu-icon" alt=""> Informe
         </a>
-
     </nav>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <div class="container">
+    <main class="container">
 
-        <div class="header-logo">
-            <img src="img/logo.png" alt="AstroVisión">
+        <header class="header-logo">
+            <img src="img/logo.png" alt="Logo AstroVisión">
             <h1>AstroVisión</h1>
-        </div>
+        </header>
 
-        <p style="text-align:center; margin-bottom:25px; color:#c2c2c2;">
+        <p class="hero-text">
             Tu mapa personal de signos, números, ciclos y símbolos.
         </p>
 
-        <div class="cards-grid">
-
+        <nav class="cards-grid">
             <a class="card-link" href="pages/formulario.html">
                 <h3>Datos</h3>
                 <p>Introduce tu información personal</p>
@@ -122,19 +114,20 @@
                 <h3>Informe</h3>
                 <p>Vista previa del resumen</p>
             </a>
-
-        </div>
+        </nav>
 
         <footer>
-            AstroVisión · Creado por JL · 2026
+            <p>AstroVisión · Creado por JL · 2026</p>
         </footer>
 
-    </div>
+    </main>
 
-    <!-- JS -->
     <script src="js/interfaz.js"></script>
+    <script>
+        // Añadimos el listener por código para limpiar el HTML de eventos
+        document.getElementById('menu-btn')?.addEventListener('click', toggleMenu);
+        document.getElementById('overlay')?.addEventListener('click', toggleMenu);
+    </script>
 
 </body>
 </html>
-
-

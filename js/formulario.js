@@ -1,5 +1,5 @@
 /* ============================
-   AUTOFORMATO FECHA dd/mm/aaaa
+    AUTOFORMATO FECHA dd/mm/aaaa
 ============================ */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ============================
-       CARGAR DATOS SI EXISTEN
+        CARGAR DATOS SI EXISTEN
     ============================ */
 
     const guardados = localStorage.getItem("astro_datos");
@@ -29,8 +29,15 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
         const datos = JSON.parse(guardados);
 
-        if (datos.nombre) document.getElementById("nombre").value = datos.nombre;
-        if (datos.fecha) document.getElementById("fecha").value = datos.fecha;
+        if (datos.nombre) {
+            const nombreElem = document.getElementById("nombre");
+            if (nombreElem) nombreElem.value = datos.nombre;
+        }
+        
+        if (datos.fecha) {
+            const fechaElem = document.getElementById("fecha");
+            if (fechaElem) fechaElem.value = datos.fecha;
+        }
 
     } catch (e) {
         console.error("Error cargando datos:", e);
@@ -39,12 +46,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 /* ============================
-   GUARDAR DATOS DEL USUARIO
+    GUARDAR DATOS DEL USUARIO
 ============================ */
 
 function guardarDatos() {
-    const nombre = document.getElementById("nombre")?.value.trim();
-    const fecha = document.getElementById("fecha")?.value.trim();
+    const nombreInput = document.getElementById("nombre");
+    const fechaInput = document.getElementById("fecha");
+
+    const nombre = nombreInput ? nombreInput.value.trim() : "";
+    const fecha = fechaInput ? fechaInput.value.trim() : "";
 
     if (!nombre) {
         alert("Por favor, introduce tu nombre.");
@@ -65,13 +75,12 @@ function guardarDatos() {
     }
 
     const datos = { nombre, fecha };
-
     localStorage.setItem("astro_datos", JSON.stringify(datos));
 
     alert("Datos guardados correctamente.");
 
     /* ============================
-       CREAR BOTÓN SEGUIR
+        CREAR BOTÓN SEGUIR (SEGURO)
     ============================ */
 
     let btnSeguir = document.getElementById("btn-seguir");
@@ -82,16 +91,28 @@ function guardarDatos() {
         btnSeguir.className = "btn-accion";
         btnSeguir.style.marginTop = "15px";
 
-        btnSeguir.innerHTML = `
-            <span>Seguir</span>
-            <img src="../img/ui/adelante.png" alt="seguir" class="icono-btn">
-        `;
+        // Crear el texto del botón de forma segura
+        const spanText = document.createElement("span");
+        spanText.textContent = "Seguir";
+
+        // Crear la imagen del botón de forma segura
+        const imgIcon = document.createElement("img");
+        imgIcon.src = "../img/ui/adelante.png";
+        imgIcon.alt = "seguir";
+        imgIcon.className = "icono-btn";
+
+        // Ensamblar el botón
+        btnSeguir.appendChild(spanText);
+        btnSeguir.appendChild(imgIcon);
 
         const card = document.querySelector(".card");
-        card.appendChild(btnSeguir);
+        if (card) {
+            card.appendChild(btnSeguir);
+        }
 
         btnSeguir.addEventListener("click", () => {
             window.location.href = "zodiaco.html";
         });
     }
 }
+

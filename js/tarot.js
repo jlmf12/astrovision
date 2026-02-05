@@ -1,17 +1,20 @@
 /* ============================
-   CARTA DEL DÍA
+    CARTA DEL DÍA
 ============================ */
 
 function cargarCartaDelDia() {
     const guardada = localStorage.getItem("astro_tarot_dia");
 
     if (guardada) {
-        const data = JSON.parse(guardada);
-        mostrarCartaDia(data);
-        return;
+        try {
+            const data = JSON.parse(guardada);
+            mostrarCartaDia(data);
+            return;
+        } catch (e) {
+            console.error("Error parseando carta guardada", e);
+        }
     }
 
-    // Si no hay carta guardada, generar una nueva
     generarCartaDia();
 }
 
@@ -25,71 +28,96 @@ function generarCartaDia() {
     };
 
     localStorage.setItem("astro_tarot_dia", JSON.stringify(data));
-
     mostrarCartaDia(data);
 }
 
 function mostrarCartaDia(data) {
-    document.getElementById("carta-dia").src = `../img/tarot/${data.imagen}`;
-    document.getElementById("carta-dia").alt = data.nombre;
-    document.getElementById("interpretacion-dia").textContent = data.interpretacion;
+    const imgElement = document.getElementById("carta-dia");
+    if (imgElement) {
+        // SOLUCIÓN PATH TRAVERSAL: Ruta anclada y validada
+        imgElement.src = `/astrovision/img/tarot/${validarNombreImagen(data.imagen)}`;
+        imgElement.alt = data.nombre;
+    }
 
-    // Guardar para informe
+    const txtElement = document.getElementById("interpretacion-dia");
+    if (txtElement) {
+        txtElement.textContent = data.interpretacion;
+    }
+
+    // Guardar para informe (Solo el texto)
     localStorage.setItem("astro_tarot", data.interpretacion);
 }
 
 /* ============================
-   TIRADA DE 3 CARTAS
+    TIRADA DE 3 CARTAS
 ============================ */
 
 function cargarTirada() {
     const guardada = localStorage.getItem("astro_tarot_tirada");
 
     if (guardada) {
-        const data = JSON.parse(guardada);
-        mostrarTirada(data);
-        return;
+        try {
+            const data = JSON.parse(guardada);
+            mostrarTirada(data);
+            return;
+        } catch (e) {
+            console.error("Error parseando tirada", e);
+        }
     }
 
     generarTirada();
 }
 
 function generarTirada() {
-    const carta1 = obtenerCartaAleatoria();
-    const carta2 = obtenerCartaAleatoria();
-    const carta3 = obtenerCartaAleatoria();
-
     const data = {
-        cartas: [carta1, carta2, carta3],
-        interpretacion: interpretarTirada(carta1, carta2, carta3)
+        cartas: [obtenerCartaAleatoria(), obtenerCartaAleatoria(), obtenerCartaAleatoria()],
     };
+    data.interpretacion = interpretarTirada(data.cartas[0], data.cartas[1], data.cartas[2]);
 
     localStorage.setItem("astro_tarot_tirada", JSON.stringify(data));
-
     mostrarTirada(data);
 }
 
 function mostrarTirada(data) {
-    document.getElementById("tirada-carta-1").src = `../img/tarot/${data.cartas[0].imagen}`;
-    document.getElementById("tirada-carta-2").src = `../img/tarot/${data.cartas[1].imagen}`;
-    document.getElementById("tirada-carta-3").src = `../img/tarot/${data.cartas[2].imagen}`;
+    // Actualizamos imágenes de forma segura (Modularizado para bajar complejidad)
+    actualizarImagenTirada("tirada-carta-1", data.cartas[0]);
+    actualizarImagenTirada("tirada-carta-2", data.cartas[1]);
+    actualizarImagenTirada("tirada-carta-3", data.cartas[2]);
 
-    document.getElementById("tirada-interpretacion").textContent = data.interpretacion;
+    const txtElement = document.getElementById("tirada-interpretacion");
+    if (txtElement) {
+        txtElement.textContent = data.interpretacion;
+    }
 
-    // Guardar para informe
     localStorage.setItem("astro_tarot", data.interpretacion);
 }
 
 /* ============================
-   INTERPRETACIÓN DE TIRADA
+    UTILIDADES Y SEGURIDAD
 ============================ */
+
+/**
+ * Evita Path Traversal validando que el nombre de la imagen esté en nuestra baraja
+ */
+function validarNombreImagen(nombre) {
+    const esValida = cartasTarot.some(c => c.imagen === nombre);
+    return esValida ? nombre : "reverso.png";
+}
+
+function actualizarImagenTirada(id, carta) {
+    const img = document.getElementById(id);
+    if (img && carta) {
+        img.src = `/astrovision/img/tarot/${validarNombreImagen(carta.imagen)}`;
+        img.alt = carta.nombre;
+    }
+}
 
 function interpretarTirada(c1, c2, c3) {
     return `Pasado: ${c1.nombre}. Presente: ${c2.nombre}. Futuro: ${c3.nombre}.`;
 }
 
 /* ============================
-   BARAJA DE TAROT
+    BARAJA DE TAROT (ESTÁTICA)
 ============================ */
 
 const cartasTarot = [
@@ -116,10 +144,6 @@ const cartasTarot = [
     { nombre: "El Juicio", imagen: "juicio.png", interpretacion: "Renovación, despertar y decisiones." },
     { nombre: "El Mundo", imagen: "mundo.png", interpretacion: "Cierre, logro y plenitud." }
 ];
-
-/* ============================
-   CARTA ALEATORIA
-============================ */
 
 function obtenerCartaAleatoria() {
     const index = Math.floor(Math.random() * cartasTarot.length);

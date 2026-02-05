@@ -17,7 +17,7 @@ async function generarPDF(nombreUsuario) {
 
     await exportarAPDF(contenedor, nombreArchivo);
     
-    if (contenedor.parentNode) {
+    if (contenedor && contenedor.parentNode) {
         document.body.removeChild(contenedor);
     }
 }
@@ -29,7 +29,6 @@ function cargarDatosSeguros() {
     claves.forEach(k => {
         try {
             const item = localStorage.getItem(`astro_${k}`);
-            // Fix for "Unguarded JSON.parse"
             data[k] = item ? JSON.parse(item) : {};
         } catch (e) {
             data[k] = {};
@@ -40,27 +39,19 @@ function cargarDatosSeguros() {
     return data;
 }
 
-/**
- * Simplified mapping to bring cyclomatic complexity below 10.
- */
 function mapearEstructuraInforme(nombre, s) {
-    const z = s.zodiaco || {};
-    const n = s.numero || {};
-    const t = s.tarot || {};
-    const l = s.luna || {};
-
-    const sol = (z.nombre || "—") + " · " + (z.descripcion || "");
-    const num = (n.numero || "—") + " · " + (n.texto || "");
-    const taro = (t.nombre || "—") + " · " + (t.significado || "");
-    const lun = l.signo ? (l.signo + " · " + l.fase) : "—";
+    const sol = (s.zodiaco?.nombre || "—") + " · " + (s.zodiaco?.descripcion || "");
+    const num = (s.numero?.numero || "—") + " · " + (s.numero?.texto || "");
+    const taro = (s.tarot?.nombre || "—") + " · " + (s.tarot?.significado || "");
+    const lun = s.luna?.signo ? (s.luna.signo + " · " + s.luna.fase) : "—";
 
     return {
         nombre: nombre || "Usuario AstroVisión",
         signoSolar: sol,
         luna: lun,
-        signoChino: s.chino.animal || "—",
+        signoChino: s.chino?.animal || "—",
         numeroVida: num,
-        compatibilidades: Array.isArray(s.compat.mejor) ? s.compat.mejor : [],
+        compatibilidades: Array.isArray(s.compat?.mejor) ? s.compat.mejor : [],
         transitos: Array.isArray(s.transitosRaw) ? s.transitosRaw : [s.transitosRaw],
         cartaDia: taro
     };
@@ -69,8 +60,7 @@ function mapearEstructuraInforme(nombre, s) {
 async function prepararContenedor() {
     const response = await fetch(RUTA_TEMPLATE);
     const text = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
+    const doc = new DOMParser().parseFromString(text, 'text/html');
     
     const contenedor = document.createElement("div");
     contenedor.style.cssText = "position:fixed; top:-9999px; width:800px;";
@@ -107,7 +97,6 @@ function gestionarListasDinamicas(cnt, d) {
 function actualizarNodoLista(nodo, items, tag, clase = "") {
     if (!nodo) return;
     nodo.replaceChildren();
-    
     items.forEach(item => {
         const el = document.createElement(tag);
         if (clase) el.className = clase;
@@ -118,13 +107,11 @@ function actualizarNodoLista(nodo, items, tag, clase = "") {
 
 async function exportarAPDF(cnt, nombre) {
     const canvas = await html2canvas(cnt, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
     const { jsPDF } = window.jspdf;
-    
     const pdf = new jsPDF("p", "mm", "a4");
     const w = 210;
     const h = (canvas.height * w) / canvas.width;
     
-    pdf.addImage(imgData, "PNG", 0, 0, w, h);
+    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
     pdf.save(nombre);
 }

@@ -1,5 +1,5 @@
 /* ============================
-    GENERAR PDF ASTROVISIÓN (REFAC)
+    GENERAR PDF ASTROVISIÓN
 ============================ */
 
 const RUTA_TEMPLATE = "/pdf/template.html";
@@ -8,24 +8,56 @@ async function generarPDF(nombreUsuario) {
     const fecha = new Date().toLocaleDateString("es-ES").replace(/\//g, "-");
     const nombreArchivo = `Informe_AstroVision_${fecha}.pdf`;
 
-    // 1. Cargar y Procesar Plantilla (Seguro)
+    // 1. Preparar el entorno de renderizado
     const contenedor = await prepararContenedor();
-    
-    // 2. Obtener y Mapear Datos
-    const datos = prepararDatosInforme(nombreUsuario);
+    const storage = cargarDatosSeguros();
+    const datos = mapearEstructuraInforme(nombreUsuario, storage);
 
-    // 3. Inyectar Datos en el DOM (Modularizado)
+    // 2. Inyectar información
     inyectarDatosPrincipales(contenedor, datos);
     gestionarListasDinamicas(contenedor, datos);
 
-    // 4. Renderizado Final
+    // 3. Generar y limpiar
     await exportarAPDF(contenedor, nombreArchivo);
-
-    // 5. Limpieza
     document.body.removeChild(contenedor);
 }
 
-/* --- FUNCIONES AUXILIARES PARA BAJAR COMPLEJIDAD --- */
+/* --- FUNCIONES AUXILIARES (REDUCCIÓN DE COMPLEJIDAD) --- */
+
+/**
+ * Carga y parsea el almacenamiento de forma protegida
+ */
+function cargarDatosSeguros() {
+    const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
+    const data = {};
+    
+    claves.forEach(k => {
+        try {
+            data[k] = JSON.parse(localStorage.getItem(`astro_${k}`) || "{}");
+        } catch (e) {
+            data[k] = {};
+        }
+    });
+    
+    data.transitosRaw = localStorage.getItem("astro_transitos") || "—";
+    return data;
+}
+
+/**
+ * Organiza la estructura final del objeto de datos
+ */
+function mapearEstructuraInforme(nombre, s) {
+    return {
+        nombre: nombre || "Usuario AstroVisión",
+        signoSolar: `${s.zodiaco.nombre || "—"} · ${s.zodiaco.descripcion || ""}`,
+        luna: s.luna.signo ? `${s.luna.signo} · ${s.luna.fase}` : "—",
+        signoChino: s.chino.animal || "—",
+        numeroVida: `${s.numero.numero || "—"} · ${s.numero.texto || ""}`,
+        compatibilidades: Array.isArray(s.compat.mejor) ? s.compat.mejor : [],
+        transitos: typeof s.transitosRaw === "string" ? [s.transitosRaw] : s.transitosRaw,
+        cartaDia: `${s.tarot.nombre || "—"} · ${s.tarot.significado || ""}`
+    };
+}
 
 async function prepararContenedor() {
     const response = await fetch(RUTA_TEMPLATE);
@@ -35,32 +67,13 @@ async function prepararContenedor() {
     
     const contenedor = document.createElement("div");
     contenedor.style.cssText = "position:fixed; top:-9999px; width:800px;";
+    
     if (doc.body.firstChild) {
         contenedor.appendChild(doc.body.firstChild.cloneNode(true));
     }
+    
     document.body.appendChild(contenedor);
     return contenedor;
-}
-
-function prepararDatosInforme(nombre) {
-    const zodiaco = JSON.parse(localStorage.getItem("astro_zodiaco") || "{}");
-    const luna = JSON.parse(localStorage.getItem("astro_luna") || "{}");
-    const numero = JSON.parse(localStorage.getItem("astro_numero") || "{}");
-    const chino = JSON.parse(localStorage.getItem("astro_chino") || "{}");
-    const compat = JSON.parse(localStorage.getItem("astro_compat") || "{}");
-    const transitos = localStorage.getItem("astro_transitos") || "—";
-    const tarot = JSON.parse(localStorage.getItem("astro_tarot") || "{}");
-
-    return {
-        nombre: nombre || "Usuario AstroVisión",
-        signoSolar: `${zodiaco.nombre || "—"} · ${zodiaco.descripcion || ""}`,
-        luna: luna.signo ? `${luna.signo} · ${luna.fase}` : "—",
-        signoChino: chino.animal || "—",
-        numeroVida: `${numero.numero || "—"} · ${numero.texto || ""}`,
-        compatibilidades: Array.isArray(compat.mejor) ? compat.mejor : [],
-        transitos: typeof transitos === "string" ? [transitos] : transitos,
-        cartaDia: `${tarot.nombre || "—"} · ${tarot.significado || ""}`
-    };
 }
 
 function inyectarDatosPrincipales(cnt, d) {
@@ -72,6 +85,7 @@ function inyectarDatosPrincipales(cnt, d) {
         "#pdf-numero-vida": d.numeroVida,
         "#pdf-carta-dia": d.cartaDia
     };
+
     Object.entries(campos).forEach(([sel, val]) => {
         const el = cnt.querySelector(sel);
         if (el) el.textContent = val;
@@ -79,36 +93,34 @@ function inyectarDatosPrincipales(cnt, d) {
 }
 
 function gestionarListasDinamicas(cnt, d) {
-    // Compatibilidades
-    const nodoC = cnt.querySelector("#pdf-compatibilidades");
-    if (nodoC) {
-        nodoC.replaceChildren();
-        d.compatibilidades.forEach(c => {
-            const s = document.createElement("span");
-            s.className = "tag";
-            s.textContent = c;
-            nodoC.appendChild(s);
-        });
-    }
-    // Tránsitos
-    const nodoT = cnt.querySelector("#pdf-transitos");
-    if (nodoT) {
-        nodoT.replaceChildren();
-        d.transitos.forEach(t => {
-            const li = document.createElement("li");
-            li.textContent = t;
-            nodoT.appendChild(li);
-        });
-    }
+    actualizarNodoLista(cnt.querySelector("#pdf-compatibilidades"), d.compatibilidades, "span", "tag");
+    actualizarNodoLista(cnt.querySelector("#pdf-transitos"), d.transitos, "li");
+}
+
+function actualizarNodoLista(nodo, items, tag, clase = "") {
+    if (!nodo) return;
+    nodo.replaceChildren();
+    
+    items.forEach(item => {
+        const el = document.createElement(tag);
+        if (clase) el.className = clase;
+        el.textContent = item;
+        nodo.appendChild(el);
+    });
 }
 
 async function exportarAPDF(cnt, nombre) {
     const canvas = await html2canvas(cnt, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
     const { jsPDF } = window.jspdf;
+    
     const pdf = new jsPDF("p", "mm", "a4");
     const w = 210;
     const h = (canvas.height * w) / canvas.width;
+    
     pdf.addImage(imgData, "PNG", 0, 0, w, h);
     pdf.save(nombre);
 }
+ 
+   
+

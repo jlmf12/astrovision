@@ -1,0 +1,30 @@
+Inicio: ________
+Datos: ________
+Zodiaco: ________
+Luna: ________
+Numerología: ________
+Chino: ________
+Compatibilidades: ________
+Tránsitos: ________
+Tarot: ________
+Informe: ________
+
+Inicio → home.png
+
+Datos → perfil.png OK
+
+Signo Zodiacal → aries.png OK
+
+Luna → luna.png OK
+
+Numerología → numero.png OK
+
+Horóscopo Chino → dragon.png OK
+
+Compatibilidades → corazon.png
+
+Tránsitos → planeta.png OK
+
+Tarot → tarot.png
+
+Informe → informe.png

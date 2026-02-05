@@ -1,0 +1,152 @@
+Listado de rutas de carpetas
+El número de serie del volumen es 2690-0FF3
+C:.
+¦   console.error(Error cargando página
+¦   estructura.txt
+¦   index.html
+¦   manifest.json
+¦   nombres iconos menu lateral.txt
+¦   res.text())
+¦   service-worker.js
+¦   ver estructura astrovision.bat
+¦   {
+¦   
++---css
+¦       animations.css
+¦       styles.css
+¦       theme.css
+¦       
++---img
+¦   ¦   logo.png
+¦   ¦   
+¦   +---chino
+¦   ¦       buey.png
+¦   ¦       caballo.png
+¦   ¦       cabra.png
+¦   ¦       cerdo.png
+¦   ¦       conejo.png
+¦   ¦       dragon.png
+¦   ¦       gallo.png
+¦   ¦       mono.png
+¦   ¦       perro.png
+¦   ¦       rata.png
+¦   ¦       serpiente.png
+¦   ¦       tigre.png
+¦   ¦       
+¦   +---icons
+¦   ¦       aries.png
+¦   ¦       corazón.png
+¦   ¦       dragon.png
+¦   ¦       home.png
+¦   ¦       informe.png
+¦   ¦       luna.png
+¦   ¦       numero.png
+¦   ¦       perfil.png
+¦   ¦       planeta.png
+¦   ¦       tarot.png
+¦   ¦       
+¦   +---luna
+¦   ¦       cuarto-creciente.png
+¦   ¦       cuarto-menguante.png
+¦   ¦       luna-llena.png
+¦   ¦       luna-nueva.png
+¦   ¦       
+¦   +---numerologia
+¦   ¦       1.png
+¦   ¦       11.png
+¦   ¦       2.png
+¦   ¦       22.png
+¦   ¦       3.png
+¦   ¦       33.png
+¦   ¦       4.png
+¦   ¦       5.png
+¦   ¦       6.png
+¦   ¦       7.png
+¦   ¦       8.png
+¦   ¦       9.png
+¦   ¦       
+¦   +---tarot
+¦   ¦       0-el-loco.png
+¦   ¦       1-el-mago.png
+¦   ¦       10-la-rueda-de-la-fortuna.png
+¦   ¦       11-la-fuerza.png
+¦   ¦       12-el-colgado.png
+¦   ¦       13-la-muerte.png
+¦   ¦       14-la-templanza.png
+¦   ¦       15-el-diablo.png
+¦   ¦       16-la-torre.png
+¦   ¦       17-la-estrella.png
+¦   ¦       18-la-luna.png
+¦   ¦       19-el-sol.png
+¦   ¦       2-la-suma-sacerdotisa.png
+¦   ¦       20-el-juicio.png
+¦   ¦       21-el-mundo.png
+¦   ¦       3-la-emperatriz.png
+¦   ¦       4-el-emperador.png
+¦   ¦       5-el-sumo-sacerdote.png
+¦   ¦       6-los-enamorados.png
+¦   ¦       7-el-carro.png
+¦   ¦       8-la-justicia.png
+¦   ¦       9-el-ermitaño.png
+¦   ¦       carta-deldia.png
+¦   ¦       reverso.png
+¦   ¦       
+¦   +---ui
+¦   ¦       adelante.png
+¦   ¦       ajustes.png
+¦   ¦       atras.png
+¦   ¦       calendario.png
+¦   ¦       descargar.png
+¦   ¦       estrella.png
+¦   ¦       menu.png
+¦   ¦       perfil.png
+¦   ¦       reloj.png
+¦   ¦       ubicacion.png
+¦   ¦       
+¦   +---zodiaco
+¦           acuario.png
+¦           aries.png
+¦           cancer.png
+¦           capricornio.png
+¦           escorpio.png
+¦           geminis.png
+¦           leo.png
+¦           libra.png
+¦           piscis.png
+¦           sagitario.png
+¦           tauro.png
+¦           virgo.png
+¦           
++---js
+¦       app.js
+¦       chino.js
+¦       compatibilidad.js
+¦       formulario.js
+¦       informe.js
+¦       interfaz.js
+¦       luna.js
+¦       numerologia.js
+¦       pdf.js
+¦       router.js
+¦       tarot.js
+¦       transitos.js
+¦       zodiaco.js
+¦       
++---pages
+¦   ¦   chino.html
+¦   ¦   compatibilidad.html
+¦   ¦   formulario.html
+¦   ¦   informe.html
+¦   ¦   luna.html
+¦   ¦   numerologia.html
+¦   ¦   tarot-tirada.html
+¦   ¦   tarot.html
+¦   ¦   transitos.html
+¦   ¦   zodiaco.html
+¦   ¦   
+¦   +---container
+¦           _plantilla.html
+¦           
++---pdf
+        template.html
+        

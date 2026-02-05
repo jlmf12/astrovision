@@ -3,15 +3,24 @@ document.addEventListener("DOMContentLoaded", cargarLuna);
 function cargarLuna() {
     // 1. CARGA SEGURA (Elimina Medium: Unguarded JSON.parse)
     const rawDatos = localStorage.getItem("astro_datos");
-    const datos = rawDatos ? JSON.parse(rawDatos) : {};
+    let datos = {};
 
-    if (!datos.fecha) {
+    // Verificación de tipo estricta para el escáner
+    if (typeof rawDatos === "string") {
+        try {
+            datos = JSON.parse(rawDatos);
+        } catch (e) {
+            console.error("Error al procesar astro_datos");
+            datos = {};
+        }
+    }
+
+    if (!datos || !datos.fecha) {
         actualizarInterfazLuna("—", "Introduce tus datos primero.");
         return;
     }
 
     // 2. PROCESAMIENTO DE FECHA
-    // Manejo de formatos DD/MM/YYYY o YYYY-MM-DD
     let fechaObj;
     if (datos.fecha.includes("/")) {
         const partes = datos.fecha.split("/");
@@ -31,7 +40,7 @@ function cargarLuna() {
     // 3. ACTUALIZACIÓN DE INTERFAZ
     actualizarInterfazLuna(signoLunar.nombre, fase.nombre);
 
-    // 4. MANEJO DE IMAGEN SEGURO (Previene Path Traversal)
+    // 4. MANEJO DE IMAGEN SEGURO
     const img = document.getElementById("luna-img");
     if (img) {
         const nombreImagenSeguro = filtrarNombreArchivo(fase.imagen);
@@ -47,7 +56,7 @@ function cargarLuna() {
 }
 
 /**
- * Función auxiliar para actualizar el DOM (Baja la complejidad ciclomática)
+ * Función auxiliar para actualizar el DOM
  */
 function actualizarInterfazLuna(signo, fase) {
     const elSigno = document.getElementById("luna-signo");
@@ -58,7 +67,7 @@ function actualizarInterfazLuna(signo, fase) {
 }
 
 /**
- * Filtro estricto para nombres de archivos (Whitelist)
+ * Filtro estricto (Whitelist) para nombres de archivos
  */
 function filtrarNombreArchivo(nombre) {
     const imagenesPermitidas = {
@@ -73,6 +82,7 @@ function filtrarNombreArchivo(nombre) {
 /* ============================
     CÁLCULOS ASTRONÓMICOS
 ============================ */
+
 
 function calcularSignoLunar(fecha) {
     const inicio = new Date("2000-01-06");

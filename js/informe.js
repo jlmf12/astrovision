@@ -1,86 +1,30 @@
-document.addEventListener("DOMContentLoaded", cargarInforme);
-
-function cargarInforme() {
-    // 1. Obtener datos con valores por defecto
-    const data = {
-        zodiaco: JSON.parse(localStorage.getItem("astro_zodiaco") || "{}"),
-        luna: JSON.parse(localStorage.getItem("astro_luna") || "{}"),
-        numero: JSON.parse(localStorage.getItem("astro_numero") || "{}"),
-        chino: JSON.parse(localStorage.getItem("astro_chino") || "{}"),
-        compat: JSON.parse(localStorage.getItem("astro_compat") || "{}"),
-        transitos: localStorage.getItem("astro_transitos") || "—",
-        tarot: JSON.parse(localStorage.getItem("astro_tarot") || "{}")
-    };
-
-    // 2. Ejecutar las actualizaciones (Modularizado para bajar la complejidad)
-    actualizarZodiaco(data.zodiaco);
-    actualizarLuna(data.luna);
-    actualizarNumero(data.numero);
-    actualizarChino(data.chino);
-    actualizarCompatibilidad(data.compat);
-    actualizarTarot(data.tarot);
-    
-    setText("info-transitos", data.transitos);
-}
-
 /* ============================
-    FUNCIONES DE ACTUALIZACIÓN
+    CARGAR DATOS PARA INFORME
 ============================ */
 
-function actualizarZodiaco(z) {
-    const txt = z.nombre 
-        ? `${z.nombre} · Elemento: ${z.elemento}. ${z.descripcion}` 
-        : "—";
-    setText("info-zodiaco", txt);
+function cargarResumenInforme() {
+    const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
+    const datosInforme = {};
+
+    claves.forEach(k => {
+        try {
+            const raw = localStorage.getItem(`astro_${k}`);
+            // Validación: Solo parsea si el dato existe
+            datosInforme[k] = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            console.error(`Error en datos de ${k}`, e);
+            datosInforme[k] = {};
+        }
+    });
+
+    actualizarVistaInforme(datosInforme);
 }
 
-function actualizarLuna(l) {
-    const txt = l.signo 
-        ? `Signo lunar: ${l.signo}. Fase: ${l.fase}.` 
-        : "—";
-    setText("info-luna", txt);
-}
-
-function actualizarNumero(n) {
-    const txt = n.numero 
-        ? `Número de vida: ${n.numero}. ${n.texto}` 
-        : "—";
-    setText("info-numero", txt);
-}
-
-function actualizarChino(c) {
-    const txt = c.animal 
-        ? `${c.animal} · Elemento: ${c.elemento}. ${c.descripcion}` 
-        : "—";
-    setText("info-chino", txt);
-}
-
-function actualizarCompatibilidad(c) {
-    if (!Array.isArray(c.mejor)) {
-        setText("info-compat", "—");
-        return;
+function actualizarVistaInforme(d) {
+    // Ejemplo de inyección segura en el DOM
+    const elResumen = document.getElementById("resumen-texto");
+    if (elResumen) {
+        elResumen.textContent = `Tu signo es ${d.zodiaco.nombre || "desconocido"} 
+                                 con fase lunar ${d.luna.fase || "no calculada"}.`;
     }
-    const txt = `Mejor: ${c.mejor.join(", ")} · Media: ${c.media.join(", ")} · Baja: ${c.baja.join(", ")}`;
-    setText("info-compat", txt);
-}
-
-function actualizarTarot(t) {
-    const txt = t.nombre 
-        ? `${t.nombre} — ${t.significado}` 
-        : "—";
-    setText("info-tarot", txt);
-}
-
-/* ============================
-    UTILIDADES
-============================ */
-
-function setText(id, texto) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = texto;
-}
-
-function generarInforme() {
-    cargarInforme();
-    alert("Informe actualizado.");
 }

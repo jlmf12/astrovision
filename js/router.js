@@ -14,26 +14,47 @@ async function navegar(ruta) {
         const respuesta = await fetch(archivo);
         if (!respuesta.ok) throw new Error("Página no encontrada");
 
-        const html = await respuesta.text();
-        contenedor.innerHTML = html;
+        const textoHTML = await respuesta.text();
+
+        // 1. Limpiar el contenedor de forma segura
+        contenedor.replaceChildren();
+
+        // 2. Usar DOMParser para convertir el texto en nodos reales (Más seguro que innerHTML)
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(textoHTML, 'text/html');
+        
+        // 3. Insertar el contenido procesado
+        const contenidoFragmento = document.createDocumentFragment();
+        Array.from(doc.body.childNodes).forEach(nodo => {
+            contenidoFragmento.appendChild(nodo.cloneNode(true));
+        });
+        contenedor.appendChild(contenidoFragmento);
 
         // Actualizar historial
         history.pushState({ ruta }, "", `#${ruta}`);
 
-        // Ejecutar scripts internos de la página cargada
+        // Ejecutar scripts internos
         ejecutarScripts(contenedor);
 
     } catch (e) {
-        contenedor.innerHTML = `
-            <div style="padding:20px; text-align:center;">
-                <h2>Error cargando la página</h2>
-                <p>No se pudo cargar: <strong>${ruta}.html</strong></p>
-            </div>
-        `;
+        // CORRECCIÓN SEGURA PARA ERRORES (Sin innerHTML)
+        contenedor.replaceChildren();
+        const divError = document.createElement("div");
+        divError.style.cssText = "padding:20px; text-align:center;";
+        
+        const h2 = document.createElement("h2");
+        h2.textContent = "Error cargando la página";
+        
+        const p = document.createElement("p");
+        p.textContent = `No se pudo cargar: ${ruta}.html`;
+        
+        divError.appendChild(h2);
+        divError.appendChild(p);
+        contenedor.appendChild(divError);
     }
 }
 
-// Ejecutar scripts incluidos dentro del HTML cargado
+// Ejecutar scripts incluidos (Mantenemos la lógica pero con precaución)
 function ejecutarScripts(elemento) {
     const scripts = elemento.querySelectorAll("script");
 
@@ -56,7 +77,7 @@ document.addEventListener("click", e => {
 
     e.preventDefault();
     const ruta = link.getAttribute("data-nav");
-    navegar(ruta);
+    if (ruta) navegar(ruta);
 });
 
 // Manejar navegación con el botón atrás del navegador

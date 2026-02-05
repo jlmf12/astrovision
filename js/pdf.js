@@ -1,34 +1,121 @@
+/* ============================
+    GENERAR PDF ASTROVISIÓN
+============================ */
+
+const RUTA_TEMPLATE = "/pdf/template.html";
+
+async function generarPDF(nombreUsuario) {
+    const fecha = new Date().toLocaleDateString("es-ES").replace(/\//g, "-");
+    const nombreArchivo = `Informe_AstroVision_${fecha}.pdf`;
+
+    const contenedor = await prepararContenedor();
+    const storage = cargarDatosSeguros();
+    const datos = mapearEstructuraInforme(nombreUsuario, storage);
+
+    inyectarDatosPrincipales(contenedor, datos);
+    gestionarListasDinamicas(contenedor, datos);
+
+    await exportarAPDF(contenedor, nombreArchivo);
+    
+    if (contenedor.parentNode) {
+        document.body.removeChild(contenedor);
+    }
+}
+
+function cargarDatosSeguros() {
+    const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
+    const data = {};
+    
+    claves.forEach(k => {
+        try {
+            const item = localStorage.getItem(`astro_${k}`);
+            // Fix for "Unguarded JSON.parse"
+            data[k] = item ? JSON.parse(item) : {};
+        } catch (e) {
+            data[k] = {};
+        }
+    });
+    
+    data.transitosRaw = localStorage.getItem("astro_transitos") || "—";
+    return data;
+}
+
 /**
- * Mapeo de datos ultra-clement con el escáner (Complejidad < 5)
+ * Simplified mapping to bring cyclomatic complexity below 10.
  */
 function mapearEstructuraInforme(nombre, s) {
-    // 1. Extraer con valores por defecto simples
     const z = s.zodiaco || {};
     const n = s.numero || {};
     const t = s.tarot || {};
     const l = s.luna || {};
 
-    // 2. Construir strings fuera del objeto para bajar la complejidad
-    const solStr = (z.nombre || "—") + " · " + (z.descripcion || "");
-    const numStr = (n.numero || "—") + " · " + (n.texto || "");
-    const taroStr = (t.nombre || "—") + " · " + (t.significado || "");
-    const lunStr = l.signo ? (l.signo + " · " + l.fase) : "—";
+    const sol = (z.nombre || "—") + " · " + (z.descripcion || "");
+    const num = (n.numero || "—") + " · " + (n.texto || "");
+    const taro = (t.nombre || "—") + " · " + (t.significado || "");
+    const lun = l.signo ? (l.signo + " · " + l.fase) : "—";
 
     return {
         nombre: nombre || "Usuario AstroVisión",
-        signoSolar: solStr,
-        luna: lunStr,
+        signoSolar: sol,
+        luna: lun,
         signoChino: s.chino.animal || "—",
-        numeroVida: numStr,
+        numeroVida: num,
         compatibilidades: Array.isArray(s.compat.mejor) ? s.compat.mejor : [],
         transitos: Array.isArray(s.transitosRaw) ? s.transitosRaw : [s.transitosRaw],
-        cartaDia: taroStr
+        cartaDia: taro
     };
 }
 
-/**
- * Función de exportación (Limpia, sin código inalcanzable)
- */
+async function prepararContenedor() {
+    const response = await fetch(RUTA_TEMPLATE);
+    const text = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    
+    const contenedor = document.createElement("div");
+    contenedor.style.cssText = "position:fixed; top:-9999px; width:800px;";
+    
+    if (doc.body.firstChild) {
+        contenedor.appendChild(doc.body.firstChild.cloneNode(true));
+    }
+    
+    document.body.appendChild(contenedor);
+    return contenedor;
+}
+
+function inyectarDatosPrincipales(cnt, d) {
+    const campos = {
+        "#pdf-nombre-usuario": d.nombre,
+        "#pdf-signo-solar": d.signoSolar,
+        "#pdf-luna": d.luna,
+        "#pdf-signo-chino": d.signoChino,
+        "#pdf-numero-vida": d.numeroVida,
+        "#pdf-carta-dia": d.cartaDia
+    };
+
+    Object.entries(campos).forEach(([sel, val]) => {
+        const el = cnt.querySelector(sel);
+        if (el) el.textContent = val;
+    });
+}
+
+function gestionarListasDinamicas(cnt, d) {
+    actualizarNodoLista(cnt.querySelector("#pdf-compatibilidades"), d.compatibilidades, "span", "tag");
+    actualizarNodoLista(cnt.querySelector("#pdf-transitos"), d.transitos, "li");
+}
+
+function actualizarNodoLista(nodo, items, tag, clase = "") {
+    if (!nodo) return;
+    nodo.replaceChildren();
+    
+    items.forEach(item => {
+        const el = document.createElement(tag);
+        if (clase) el.className = clase;
+        el.textContent = item;
+        nodo.appendChild(el);
+    });
+}
+
 async function exportarAPDF(cnt, nombre) {
     const canvas = await html2canvas(cnt, { scale: 2, useCORS: true });
     const imgData = canvas.toDataURL("image/png");
@@ -41,5 +128,3 @@ async function exportarAPDF(cnt, nombre) {
     pdf.addImage(imgData, "PNG", 0, 0, w, h);
     pdf.save(nombre);
 }
-// VERIFICACIÓN: No debe haber NADA escrito después de esta llave.
-

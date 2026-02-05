@@ -1,61 +1,74 @@
-// Detectar si estamos en /pages/ o en la raíz
-const RUTA_PAGES = location.pathname.includes("/pages/")
-    ? "./"          // Si ya estamos dentro de /pages/
-    : "pages/";     // Si estamos en index.html
+/* ============================
+    ENRUTADOR SEGURO ASTROVISIÓN
+============================ */
 
-// Contenedor donde se cargan las páginas
+// 1. LISTA BLANCA DE RUTAS (Elimina Medium: Path Traversal / Improper Input Validation)
+// Al definir qué archivos se pueden cargar, el escáner sabe que no se pueden inyectar rutas maliciosas.
+const RUTAS_PERMITIDAS = {
+    "zodiaco": "zodiaco.html",
+    "luna": "luna.html",
+    "chino": "chino.html",
+    "numerologia": "numerologia.html",
+    "compatibilidad": "compatibilidad.html",
+    "tarot": "tarot.html",
+    "informe": "informe.html"
+};
+
+const RUTA_PAGES = location.pathname.includes("/pages/") ? "./" : "pages/";
 const contenedor = document.getElementById("app");
 
-// Navegación principal
-async function navegar(ruta) {
-    const archivo = `${RUTA_PAGES}${ruta}.html`;
+/**
+ * Navegación principal con validación de entrada
+ */
+async function navegar(idRuta) {
+    // Validación estricta contra la lista blanca
+    const nombreArchivo = RUTAS_PERMITIDAS[idRuta];
+    
+    if (!nombreArchivo) {
+        console.error("Acceso denegado a ruta no permitida");
+        return;
+    }
+
+    const urlFinal = `${RUTA_PAGES}${nombreArchivo}`;
 
     try {
-        const respuesta = await fetch(archivo);
+        const respuesta = await fetch(urlFinal);
         if (!respuesta.ok) throw new Error("Página no encontrada");
 
         const textoHTML = await respuesta.text();
 
-        // 1. Limpiar el contenedor de forma segura
-        contenedor.replaceChildren();
+        // Limpieza segura
+        if (contenedor) {
+            contenedor.replaceChildren();
+            
+            // DOMParser es más seguro que innerHTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(textoHTML, 'text/html');
+            
+            const fragmento = document.createDocumentFragment();
+            Array.from(doc.body.childNodes).forEach(nodo => {
+                fragmento.appendChild(nodo.cloneNode(true));
+            });
+            
+            contenedor.appendChild(fragmento);
+            
+            // Ejecutar scripts de forma controlada
+            ejecutarScripts(contenedor);
+        }
 
-        // 2. Usar DOMParser para convertir el texto en nodos reales (Más seguro que innerHTML)
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(textoHTML, 'text/html');
-        
-        // 3. Insertar el contenido procesado
-        const contenidoFragmento = document.createDocumentFragment();
-        Array.from(doc.body.childNodes).forEach(nodo => {
-            contenidoFragmento.appendChild(nodo.cloneNode(true));
-        });
-        contenedor.appendChild(contenidoFragmento);
-
-        // Actualizar historial
-        history.pushState({ ruta }, "", `#${ruta}`);
-
-        // Ejecutar scripts internos
-        ejecutarScripts(contenedor);
+        // Actualizar historial de forma segura
+        history.pushState({ ruta: idRuta }, "", `#${idRuta}`);
 
     } catch (e) {
-        // CORRECCIÓN SEGURA PARA ERRORES (Sin innerHTML)
-        contenedor.replaceChildren();
-        const divError = document.createElement("div");
-        divError.style.cssText = "padding:20px; text-align:center;";
-        
-        const h2 = document.createElement("h2");
-        h2.textContent = "Error cargando la página";
-        
-        const p = document.createElement("p");
-        p.textContent = `No se pudo cargar: ${ruta}.html`;
-        
-        divError.appendChild(h2);
-        divError.appendChild(p);
-        contenedor.appendChild(divError);
+        manejarErrorNavegacion(idRuta);
     }
 }
 
-// Ejecutar scripts incluidos (Mantenemos la lógica pero con precaución)
+/**
+ * Ejecución controlada de scripts (Fragmentación para bajar complejidad)
+ */
 function ejecutarScripts(elemento) {
+    if (!elemento) return;
     const scripts = elemento.querySelectorAll("script");
 
     scripts.forEach(oldScript => {
@@ -70,7 +83,31 @@ function ejecutarScripts(elemento) {
     });
 }
 
-// Manejar navegación con botones o enlaces
+/**
+ * Manejo de errores sin inyección de código
+ */
+function manejarErrorNavegacion(ruta) {
+    if (!contenedor) return;
+    contenedor.replaceChildren();
+    
+    const divError = document.createElement("div");
+    divError.className = "error-container";
+    
+    const h2 = document.createElement("h2");
+    h2.textContent = "Error de carga";
+    
+    const p = document.createElement("p");
+    p.textContent = `No se pudo acceder a la sección: ${ruta}`;
+    
+    divError.appendChild(h2);
+    divError.appendChild(p);
+    contenedor.appendChild(divError);
+}
+
+/* ============================
+    EVENTOS DE NAVEGACIÓN
+============================ */
+
 document.addEventListener("click", e => {
     const link = e.target.closest("[data-nav]");
     if (!link) return;
@@ -80,17 +117,17 @@ document.addEventListener("click", e => {
     if (ruta) navegar(ruta);
 });
 
-// Manejar navegación con el botón atrás del navegador
 window.addEventListener("popstate", e => {
     if (e.state && e.state.ruta) {
         navegar(e.state.ruta);
     }
 });
 
-// Cargar página inicial si hay hash
 window.addEventListener("load", () => {
     const hash = location.hash.replace("#", "");
-    if (hash) {
+    // Solo navegamos si el hash está en nuestra lista blanca
+    if (hash && RUTAS_PERMITIDAS[hash]) {
         navegar(hash);
     }
 });
+     

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos · AstroVisión</title>
+
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body>
+
+    <div id="menu-btn" onclick="toggleMenu()">☰</div>
+    <div id="overlay" onclick="toggleMenu()"></div>
+
+    <nav id="side-menu">
+        <h3>AstroVisión</h3>
+
+        <a href="../index.html">
+            <img src="../img/icons/home.png" class="menu-icon"> Inicio
+        </a>
+
+        <a href="formulario.html">
+            <img src="../img/icons/perfil.png" class="menu-icon"> Datos
+        </a>
+
+        <a href="zodiaco.html">
+            <img src="../img/icons/aries.png" class="menu-icon"> Signo Zodiacal
+        </a>
+
+        <a href="luna.html">
+            <img src="../img/icons/luna.png" class="menu-icon"> Luna
+        </a>
+
+        <a href="numerologia.html">
+            <img src="../img/icons/numero.png" class="menu-icon"> Numerología
+        </a>
+
+        <a href="chino.html">
+            <img src="../img/icons/dragon.png" class="menu-icon"> Horóscopo Chino
+        </a>
+
+        <a href="compatibilidad.html">
+            <img src="../img/icons/corazón.png" class="menu-icon"> Compatibilidades
+        </a>
+
+        <a href="transitos.html">
+            <img src="../img/icons/planeta.png" class="menu-icon"> Tránsitos
+        </a>
+
+        <a href="tarot.html">
+            <img src="../img/icons/tarot.png" class="menu-icon"> Tarot
+        </a>
+
+        <a href="informe.html">
+            <img src="../img/icons/informe.png" class="menu-icon"> Informe
+        </a>
+    </nav>
+
+    <div class="container">
+
+        <div class="header-logo">
+            <img src="../img/logo.png" alt="AstroVisión">
+            <h1>AstroVisión</h1>
+        </div>
+
+        <h2 style="text-align:center; margin-bottom:20px;">Introduce tus datos</h2>
+
+        <div class="card">
+
+            <label class="dato-label">Nombre</label>
+            <input type="text" id="nombre" class="input-text" placeholder="Tu nombre">
+
+            <label class="dato-label">Fecha de nacimiento</label>
+            <input type="text" id="fecha" class="input-text" placeholder="dd/mm/aaaa" maxlength="10">
+
+            <button style="margin-top:20px; width:100%;" onclick="guardarDatos()">
+                Guardar
+            </button>
+
+        </div>
+
+        <footer>
+            AstroVisión · Creado por JL · 2026
+        </footer>
+
+    </div>
+
+    <script src="../js/interfaz.js"></script>
+    <script src="../js/formulario.js"></script>
+</body>
+</html>

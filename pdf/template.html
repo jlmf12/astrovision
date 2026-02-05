@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe AstroVisión</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: auto;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #d47b00;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #444;
+            margin-top: 12px;
+        }
+
+        .value {
+            margin-bottom: 8px;
+            color: #000;
+        }
+
+        hr {
+            margin: 25px 0;
+            border: none;
+            border-top: 1px solid #ccc;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            padding: 4px 8px;
+            margin: 3px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <h1>Informe AstroVisión</h1>
+    <h2 id="pdf-nombre-usuario">—</h2>
+
+    <hr>
+
+    <!-- IDENTIDAD -->
+    <div class="section">
+        <h2>Identidad Cósmica</h2>
+
+        <div class="label">Signo Solar</div>
+        <div class="value" id="pdf-signo-solar">—</div>
+
+        <div class="value" id="pdf-signo-solar-texto"></div>
+
+        <div class="label">Luna</div>
+        <div class="value" id="pdf-luna">—</div>
+
+        <div class="label">Signo Chino</div>
+        <div class="value" id="pdf-signo-chino">—</div>
+    </div>
+
+    <hr>
+
+    <!-- NUMEROLOGÍA -->
+    <div class="section">
+        <h2>Numerología</h2>
+
+        <div class="label">Número de Vida</div>
+        <div class="value" id="pdf-numero-vida">—</div>
+
+        <div class="label">Interpretación</div>
+        <div class="value" id="pdf-numerologia-resumen">—</div>
+    </div>
+
+    <hr>
+
+    <!-- CARTA DEL DÍA -->
+    <div class="section">
+        <h2>Carta del Día</h2>
+
+        <div class="value" id="pdf-carta-dia">—</div>
+        <div class="value" id="pdf-carta-dia-texto">—</div>
+    </div>
+
+    <hr>
+
+    <!-- COMPATIBILIDADES -->
+    <div class="section">
+        <h2>Compatibilidades</h2>
+
+        <div id="pdf-compatibilidades"></div>
+    </div>
+
+    <hr>
+
+    <!-- TRÁNSITOS -->
+    <div class="section">
+        <h2>Tránsitos Actuales</h2>
+
+        <ul id="pdf-transitos"></ul>
+    </div>
+
+</div>
+
+</body>
+</html>

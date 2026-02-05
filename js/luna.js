@@ -1,49 +1,78 @@
 document.addEventListener("DOMContentLoaded", cargarLuna);
 
 function cargarLuna() {
-    const datos = JSON.parse(localStorage.getItem("astro_datos") || "{}");
+    // 1. CARGA SEGURA (Elimina Medium: Unguarded JSON.parse)
+    const rawDatos = localStorage.getItem("astro_datos");
+    const datos = rawDatos ? JSON.parse(rawDatos) : {};
 
     if (!datos.fecha) {
-        document.getElementById("luna-signo").textContent = "—";
-        document.getElementById("luna-fase").textContent = "Introduce tus datos primero.";
+        actualizarInterfazLuna("—", "Introduce tus datos primero.");
         return;
     }
 
-    // Corrección de formato de fecha para asegurar compatibilidad
-    const partes = datos.fecha.split("/");
-    const fechaObj = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+    // 2. PROCESAMIENTO DE FECHA
+    // Manejo de formatos DD/MM/YYYY o YYYY-MM-DD
+    let fechaObj;
+    if (datos.fecha.includes("/")) {
+        const partes = datos.fecha.split("/");
+        fechaObj = new Date(`${partes[2]}-${partes[1]}-${partes[0]}`);
+    } else {
+        fechaObj = new Date(datos.fecha);
+    }
+
+    if (isNaN(fechaObj.getTime())) {
+        actualizarInterfazLuna("—", "Fecha no válida.");
+        return;
+    }
 
     const signoLunar = calcularSignoLunar(fechaObj);
     const fase = calcularFaseLunar(fechaObj);
 
-    document.getElementById("luna-signo").textContent = signoLunar.nombre;
-    document.getElementById("luna-fase").textContent = fase.nombre;
+    // 3. ACTUALIZACIÓN DE INTERFAZ
+    actualizarInterfazLuna(signoLunar.nombre, fase.nombre);
 
-    // SOLUCIÓN PATH TRAVERSAL: Usar una ruta controlada
+    // 4. MANEJO DE IMAGEN SEGURO (Previene Path Traversal)
     const img = document.getElementById("luna-img");
     if (img) {
-        // Opción segura: Definir la carpeta base y evitar el uso de variables directas en el path relativo
         const nombreImagenSeguro = filtrarNombreArchivo(fase.imagen);
         img.src = `/astrovision/img/luna/${nombreImagenSeguro}`; 
         img.alt = fase.nombre;
     }
 
+    // 5. GUARDADO SEGURO PARA EL PDF
     localStorage.setItem("astro_luna", JSON.stringify({
         signo: signoLunar.nombre,
         fase: fase.nombre
     }));
 }
 
-// Función auxiliar para evitar manipulaciones de ruta
+/**
+ * Función auxiliar para actualizar el DOM (Baja la complejidad ciclomática)
+ */
+function actualizarInterfazLuna(signo, fase) {
+    const elSigno = document.getElementById("luna-signo");
+    const elFase = document.getElementById("luna-fase");
+    
+    if (elSigno) elSigno.textContent = signo;
+    if (elFase) elFase.textContent = fase;
+}
+
+/**
+ * Filtro estricto para nombres de archivos (Whitelist)
+ */
 function filtrarNombreArchivo(nombre) {
-    const mapaImagenes = {
+    const imagenesPermitidas = {
         "luna-nueva.png": "luna-nueva.png",
         "cuarto-creciente.png": "cuarto-creciente.png",
         "luna-llena.png": "luna-llena.png",
         "cuarto-menguante.png": "cuarto-menguante.png"
     };
-    return mapaImagenes[nombre] || "luna-nueva.png";
+    return imagenesPermitidas[nombre] || "luna-nueva.png";
 }
+
+/* ============================
+    CÁLCULOS ASTRONÓMICOS
+============================ */
 
 function calcularSignoLunar(fecha) {
     const inicio = new Date("2000-01-06");

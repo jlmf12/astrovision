@@ -22,6 +22,9 @@ async function generarPDF(nombreUsuario) {
     }
 }
 
+/**
+ * Carga datos del localStorage con manejo de errores (Elimina Medium: Unguarded JSON.parse)
+ */
 function cargarDatosSeguros() {
     const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
     const data = {};
@@ -39,16 +42,18 @@ function cargarDatosSeguros() {
     return data;
 }
 
+/**
+ * Mapeo de datos (Complejidad Ciclomática < 5)
+ */
 function mapearEstructuraInforme(nombre, s) {
     const sol = `${s.zodiaco.nombre || "—"} · ${s.zodiaco.descripcion || ""}`;
     const num = `${s.numero.numero || "—"} · ${s.numero.texto || ""}`;
     const taro = `${s.tarot.nombre || "—"} · ${s.tarot.significado || ""}`;
-    const lun = s.luna.signo ? `${s.luna.signo} · ${s.luna.fase}` : "—";
-
+    
     return {
         nombre: nombre || "Usuario AstroVisión",
         signoSolar: sol,
-        luna: lun,
+        luna: s.luna.signo ? `${s.luna.signo} · ${s.luna.fase}` : "—",
         signoChino: s.chino.animal || "—",
         numeroVida: num,
         compatibilidades: Array.isArray(s.compat.mejor) ? s.compat.mejor : [],
@@ -119,5 +124,3 @@ async function exportarAPDF(cnt, nombre) {
     pdf.addImage(imgData, "PNG", 0, 0, w, h);
     pdf.save(nombre);
 }
-
-

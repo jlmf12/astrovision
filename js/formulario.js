@@ -1,9 +1,4 @@
-const PAGINAS = {
-    RESULTADO: "zodiaco.html",
-    INICIO: "index.html"
-};
-
-function manejarEnvio(event) {
+function guardarYContinuar(event) {
     event.preventDefault();
     
     const nombre = document.getElementById("nombre").value;
@@ -13,16 +8,6 @@ function manejarEnvio(event) {
 
     localStorage.setItem("astro_datos", JSON.stringify({ nombre, fecha }));
 
-    // Secure redirection
-    window.location.assign(PAGINAS.RESULTADO);
-}
-
-function cargarDatosFormulario() {
-    try {
-        const raw = localStorage.getItem("astro_datos");
-        // Safe check before parsing
-        return raw ? JSON.parse(raw) : {};
-    } catch (e) {
-        return {};
-    }
+    // Redirección fija (Evita manipulación de rutas)
+    window.location.assign("zodiaco.html");
 }

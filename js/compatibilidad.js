@@ -3,14 +3,25 @@
 ============================ */
 
 function calcularCompatibilidad() {
-    // 1. CARGA SEGURA: Elimina "Unguarded JSON.parse"
+    // 1. CARGA SEGURA: Verificación estricta para eliminar "Unguarded JSON.parse"
     const rawZodiaco = localStorage.getItem("astro_zodiaco");
-    const zodiaco = rawZodiaco ? JSON.parse(rawZodiaco) : null;
+    let zodiaco = null;
+
+    if (typeof rawZodiaco === "string") {
+        try {
+            zodiaco = JSON.parse(rawZodiaco);
+        } catch (e) {
+            console.error("Error al procesar astro_zodiaco");
+            zodiaco = null;
+        }
+    }
 
     const contenedorMsg = document.getElementById("compat-resultado");
 
     if (!zodiaco || !zodiaco.nombre) {
-        if (contenedorMsg) contenedorMsg.textContent = "Calcula tu signo solar primero.";
+        if (contenedorMsg) {
+            contenedorMsg.textContent = "Calcula tu signo solar primero.";
+        }
         return;
     }
 

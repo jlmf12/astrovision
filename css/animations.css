@@ -1,0 +1,89 @@
+/* ================================
+   TAROT · ANIMACIONES COMPLETAS
+   ================================ */
+
+/* --- Contenedor de carta --- */
+.carta {
+    width: 150px;
+    height: 240px;
+    perspective: 1000px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+/* --- Núcleo del flip 3D --- */
+.carta-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.8s ease;
+    transform-style: preserve-3d;
+}
+
+/* Cuando la carta está volteada */
+.carta.flip .carta-inner {
+    transform: rotateY(180deg);
+}
+
+/* --- Caras de la carta --- */
+.carta-front,
+.carta-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    top: 0;
+    left: 0;
+}
+
+/* Reverso */
+.carta-front {
+    transform: rotateY(0deg);
+}
+
+/* Cara visible */
+.carta-back {
+    transform: rotateY(180deg);
+}
+
+/* --- Carta invertida (boca abajo) --- */
+.carta-back.invertida {
+    transform: rotateY(180deg) rotate(180deg);
+}
+
+/* --- Glow dorado al pasar el ratón --- */
+.carta:hover {
+    filter: drop-shadow(0 0 10px #e8c77e);
+}
+
+/* ================================
+   ANIMACIÓN DE BARAJAR
+   ================================ */
+
+.barajando {
+    animation: shake 0.5s infinite;
+}
+
+@keyframes shake {
+    0%   { transform: translateX(0); }
+    25%  { transform: translateX(-5px); }
+    50%  { transform: translateX(5px); }
+    75%  { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+
+/* ================================
+   EFECTO DE APARICIÓN
+   ================================ */
+
+.fade-in {
+    animation: fadeIn 0.6s ease forwards;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

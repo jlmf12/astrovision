@@ -1,91 +1,45 @@
 /* ============================
-   CARGAR HORÓSCOPO CHINO
+    CARGAR DATOS PARA INFORME
 ============================ */
 
-function cargarChino() {
-    // 1. CARGA SEGURA: Evita "Unguarded JSON.parse"
-    const rawDatos = localStorage.getItem("astro_datos");
-    const datos = rawDatos ? JSON.parse(rawDatos) : {};
+function cargarResumenInforme() {
+    // Definimos las claves que necesitamos recuperar
+    const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
+    const datosInforme = {};
 
-    // 2. VALIDACIÓN DE DATOS
-    if (!datos.fecha) {
-        actualizarInterfazChino("—", "—", "Introduce tus datos primero.");
-        return;
-    }
+    claves.forEach(k => {
+        try {
+            // CARGA SEGURA: Se verifica la existencia antes de parsear
+            const raw = localStorage.getItem(`astro_${k}`);
+            datosInforme[k] = raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            console.error(`Error al procesar datos de ${k}:`, e);
+            datosInforme[k] = {};
+        }
+    });
 
-    // 3. PROCESAMIENTO ROBUSTO DE FECHA
-    const fechaObj = new Date(datos.fecha);
-    const year = fechaObj.getUTCFullYear();
+    // Recuperar tránsitos (suele ser un string simple)
+    datosInforme.transitos = localStorage.getItem("astro_transitos") || "No hay tránsitos disponibles.";
 
-    // Validar que el año sea un número (evita fallos si la fecha es inválida)
-    if (isNaN(year)) {
-        actualizarInterfazChino("—", "—", "Fecha no válida.");
-        return;
-    }
-
-    const animal = obtenerAnimalChino(year);
-    const elemento = obtenerElementoChino(year);
-    const descripcion = descripcionesChinas[animal] || "—";
-
-    // 4. ACTUALIZACIÓN DE INTERFAZ
-    actualizarInterfazChino(animal, elemento, descripcion);
-
-    // 5. PERSISTENCIA SEGURA
-    localStorage.setItem("astro_chino", JSON.stringify({
-        animal,
-        elemento,
-        descripcion
-    }));
+    // Inyectar datos en la vista del informe
+    actualizarVistaInforme(datosInforme);
 }
 
 /**
- * Actualiza el DOM (Mantiene la complejidad ciclomática baja)
+ * Inyección segura de datos en el informe final
  */
-function actualizarInterfazChino(animal, elemento, descripcion) {
-    const ids = {
-        "chino-animal": animal,
-        "chino-elemento": elemento,
-        "chino-descripcion": descripcion
+function actualizarVistaInforme(d) {
+    const mapeo = {
+        "inf-nombre": d.zodiaco.nombre || "—",
+        "inf-fase": d.luna.fase || "—",
+        "inf-numero": d.numero.numero || "—",
+        "inf-animal": d.chino.animal || "—",
+        "inf-compat": d.compat.mejor ? d.compat.mejor.join(", ") : "—",
+        "inf-tarot": d.tarot.nombre || "—"
     };
 
-    Object.entries(ids).forEach(([id, valor]) => {
+    Object.entries(mapeo).forEach(([id, valor]) => {
         const el = document.getElementById(id);
         if (el) el.textContent = valor;
     });
 }
-
-/* ============================
-   LÓGICA DE CÁLCULO
-============================ */
-
-function obtenerAnimalChino(year) {
-    const animales = [
-        "Rata", "Buey", "Tigre", "Conejo", "Dragón", "Serpiente",
-        "Caballo", "Cabra", "Mono", "Gallo", "Perro", "Cerdo"
-    ];
-    // Ciclo de 12 años (2020 fue Rata)
-    const index = (year - 2020) % 12;
-    return animales[(index + 12) % 12];
-}
-
-function obtenerElementoChino(year) {
-    const elementos = ["Metal", "Agua", "Madera", "Fuego", "Tierra"];
-    // Ciclo de 10 años, cambia cada 2 años
-    const index = Math.floor(((year - 2020) % 10) / 2);
-    return elementos[(index + 5) % 5];
-}
-
-const descripcionesChinas = {
-    "Rata": "Inteligente, estratégica y adaptable.",
-    "Buey": "Paciente, fuerte y confiable.",
-    "Tigre": "Valiente, impulsivo y apasionado.",
-    "Conejo": "Amable, sensible y diplomático.",
-    "Dragón": "Poderoso, creativo y magnético.",
-    "Serpiente": "Sabia, intuitiva y misteriosa.",
-    "Caballo": "Libre, energético y sociable.",
-    "Cabra": "Artística, tranquila y compasiva.",
-    "Mono": "Ingenioso, curioso y divertido.",
-    "Gallo": "Preciso, trabajador y directo.",
-    "Perro": "Leal, protector y honesto.",
-    "Cerdo": "Generoso, noble y amable."
-};

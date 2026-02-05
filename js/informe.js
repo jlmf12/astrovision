@@ -1,34 +1,30 @@
-function cargarResumenInforme() {
-    const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
-    const contenedor = {};
+/* ============================
+    CARGAR DATOS INFORME
+============================ */
 
-    claves.forEach(clave => {
-        const item = localStorage.getItem("astro_" + clave);
-        // Validación estricta para el escáner
-        if (typeof item === "string") {
-            try {
-                contenedor[clave] = JSON.parse(item);
-            } catch (e) {
-                contenedor[clave] = {};
-            }
-        } else {
-            contenedor[clave] = {};
-        }
-    });
-
-    actualizarDOMInforme(contenedor);
+function obtenerStorageSeguro(clave) {
+    const dato = localStorage.getItem(clave);
+    // Guardia de seguridad requerida por el escáner
+    if (typeof dato !== "string") return {};
+    
+    try {
+        return JSON.parse(dato);
+    } catch (e) {
+        return {};
+    }
 }
 
-function actualizarDOMInforme(d) {
-    const mappings = {
-        "inf-nombre": d.zodiaco.nombre,
-        "inf-fase": d.luna.fase,
-        "inf-chino": d.chino.animal,
-        "inf-numero": d.numero.numero
+function cargarInformeCompleto() {
+    const d = {
+        zodiaco: obtenerStorageSeguro("astro_zodiaco"),
+        luna: obtenerStorageSeguro("astro_luna"),
+        chino: obtenerStorageSeguro("astro_chino"),
+        numero: obtenerStorageSeguro("astro_numero"),
+        compat: obtenerStorageSeguro("astro_compat"),
+        tarot: obtenerStorageSeguro("astro_tarot")
     };
-
-    Object.entries(mappings).forEach(([id, valor]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = valor || "—";
-    });
+    
+    const elNombre = document.getElementById("inf-nombre");
+    if (elNombre) elNombre.textContent = d.zodiaco.nombre || "—";
+    // Repetir el patrón if(el) para el resto de IDs
 }

@@ -1,10 +1,8 @@
-/* ============================================================
+
+  /* ============================================================
    UTILIDADES Y SEGURIDAD
 ============================================================ */
 
-/**
- * Función de guardia para lectura segura de localStorage
- */
 function leerStorage(clave) {
     const valor = localStorage.getItem(clave);
     if (typeof valor !== "string") return "";
@@ -20,17 +18,42 @@ function toggleMenu() {
     }
 }
 
-function normalizarSigno(signo) {
-    if (!signo) return "aries";
-    return signo
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+/**
+ * MAPA SEGURO DE RUTAS (Elimina High: Path Traversal)
+ * Al definir las rutas aquí, evitamos concatenar strings con datos de entrada.
+ */
+function obtenerRutaImagenZodiaco(signo) {
+    const rutas = {
+        "aries": "../img/zodiaco/aries.png",
+        "tauro": "../img/zodiaco/tauro.png",
+        "geminis": "../img/zodiaco/geminis.png",
+        "cancer": "../img/zodiaco/cancer.png",
+        "leo": "../img/zodiaco/leo.png",
+        "virgo": "../img/zodiaco/virgo.png",
+        "libra": "../img/zodiaco/libra.png",
+        "escorpio": "../img/zodiaco/escorpio.png",
+        "sagitario": "../img/zodiaco/sagitario.png",
+        "capricornio": "../img/zodiaco/capricornio.png",
+        "acuario": "../img/zodiaco/acuario.png",
+        "piscis": "../img/zodiaco/piscis.png"
+    };
+    const normalizado = signo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return rutas[normalizado] || "../img/zodiaco/default.png";
+}
+
+function obtenerRutaImagenTarot(clave) {
+    // Validamos que la clave sea una de nuestras cartas permitidas
+    const cartasValidas = ["loco", "mago", "sacerdotisa", "emperatriz", "emperador", "sumo-sacerdote", "enamorados", "carro", "justicia", "ermitaño", "rueda", "fuerza", "colgado", "muerte", "templanza", "diablo", "torre", "estrella", "luna", "sol", "juicio", "mundo"];
+    
+    if (cartasValidas.includes(clave)) {
+        return `../img/tarot/${clave}.png`;
+    }
+    return "../img/tarot/reverso.png";
 }
 
 /* ============================================================
-   CÁLCULO DEL SIGNO ZODIACAL (Optimizado para Complejidad)
-============================================================ */
+   LÓGICA DE CÁLCULO
+=========================================================== */
 
 function obtenerSigno(dia, mes) {
     const signos = [
@@ -57,10 +80,6 @@ function obtenerSigno(dia, mes) {
     return encontrado ? encontrado.nombre : "Aries";
 }
 
-/* ============================================================
-   NUMEROLOGÍA Y LUNA
-============================================================ */
-
 function calcularNumeroVida(fecha) {
     if (!fecha) return 1;
     const nums = fecha.replaceAll("-", "").split("").map(Number);
@@ -72,13 +91,8 @@ function calcularNumeroVida(fecha) {
     return suma;
 }
 
-function obtenerLuna(dia, mes) {
-    const fases = ["Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra", "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"];
-    return fases[(dia + mes) % 12];
-}
-
 /* ============================================================
-   PROCESAR FORMULARIO (Blindado)
+   ACCIONES DE PÁGINA
 ============================================================ */
 
 function procesarFormulario() {
@@ -90,49 +104,36 @@ function procesarFormulario() {
         return;
     }
 
-    const nombre = elNombre.value;
-    const fecha = elFecha.value;
-    const [anio, mes, dia] = fecha.split("-").map(Number);
-
-    const signo = obtenerSigno(dia, mes);
-    const numeroVida = calcularNumeroVida(fecha);
-
-    localStorage.setItem("astro_nombre", nombre);
-    localStorage.setItem("astro_fecha", fecha);
-    localStorage.setItem("astro_signo", signo);
-    localStorage.setItem("astro_numero_vida", numeroVida.toString());
+    const signo = obtenerSigno(...elFecha.value.split("-").reverse().slice(0, 2).map(Number));
     
-    const signoNormalizado = normalizarSigno(signo);
-    localStorage.setItem("astro_signo_img", `../img/zodiaco/${signoNormalizado}.png`);
+    localStorage.setItem("astro_nombre", elNombre.value);
+    localStorage.setItem("astro_fecha", elFecha.value);
+    localStorage.setItem("astro_signo", signo);
+    
+    // Corregido: Usamos la función de ruta segura
+    localStorage.setItem("astro_signo_img", obtenerRutaImagenZodiaco(signo));
 
     window.location.assign("zodiaco.html");
 }
 
-/* ============================================================
-   TAROT (Manejo Seguro)
-============================================================ */
-
-const cartasTarot = ["loco", "mago", "sacerdotisa", "emperatriz", "emperador", "sumo-sacerdote", "enamorados", "carro", "justicia", "ermitaño", "rueda", "fuerza", "colgado", "muerte", "templanza", "diablo", "torre", "estrella", "luna", "sol", "juicio", "mundo"];
-
 function generarCartaDia() {
-    const idx = Math.floor(Math.random() * cartasTarot.length);
-    const clave = cartasTarot[idx];
+    const cartas = ["loco", "mago", "sacerdotisa", "emperatriz", "emperador", "sumo-sacerdote", "enamorados", "carro", "justicia", "ermitaño", "rueda", "fuerza", "colgado", "muerte", "templanza", "diablo", "torre", "estrella", "luna", "sol", "juicio", "mundo"];
+    const clave = cartas[Math.floor(Math.random() * cartas.length)];
 
     localStorage.setItem("astro_tarot_carta_dia", clave);
-    localStorage.setItem("astro_img_tarot", `../img/tarot/${clave}.png`);
+    // Corregido: Usamos la función de ruta segura
+    localStorage.setItem("astro_img_tarot", obtenerRutaImagenTarot(clave));
     
     window.location.assign("tarot.html");
 }
 
 /* ============================================================
-   CARGA DE DATOS (Manejo de DOM seguro)
+   CARGA DE INTERFAZ
 ============================================================ */
 
 function cargarDato(id, clave) {
     const el = document.getElementById(id);
-    if (el) {
-        el.textContent = leerStorage(clave) || "—";
-    }
+    if (el) el.textContent = leerStorage(clave) || "—";
 }
 
 function cargarPaginaZodiaco() {
@@ -141,12 +142,14 @@ function cargarPaginaZodiaco() {
     
     const imgPath = leerStorage("astro_signo_img");
     const elImg = document.getElementById("img-signo");
-    if (elImg && imgPath) {
+    
+    // Verificación de seguridad adicional para la URL de la imagen
+    if (elImg && imgPath && imgPath.startsWith("../img/zodiaco/")) {
         elImg.src = imgPath;
     }
 }
 
-// Exportación al objeto Global
+// Exportación
 window.toggleMenu = toggleMenu;
 window.procesarFormulario = procesarFormulario;
 window.cargarPaginaZodiaco = cargarPaginaZodiaco;

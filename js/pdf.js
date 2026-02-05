@@ -8,32 +8,28 @@ async function generarPDF(nombreUsuario) {
     const fecha = new Date().toLocaleDateString("es-ES").replace(/\//g, "-");
     const nombreArchivo = `Informe_AstroVision_${fecha}.pdf`;
 
-    // 1. Preparar el entorno de renderizado
     const contenedor = await prepararContenedor();
     const storage = cargarDatosSeguros();
     const datos = mapearEstructuraInforme(nombreUsuario, storage);
 
-    // 2. Inyectar información
     inyectarDatosPrincipales(contenedor, datos);
     gestionarListasDinamicas(contenedor, datos);
 
-    // 3. Generar y limpiar
     await exportarAPDF(contenedor, nombreArchivo);
-    document.body.removeChild(contenedor);
+    
+    if (contenedor.parentNode) {
+        document.body.removeChild(contenedor);
+    }
 }
 
-/* --- FUNCIONES AUXILIARES (REDUCCIÓN DE COMPLEJIDAD) --- */
-
-/**
- * Carga y parsea el almacenamiento de forma protegida
- */
 function cargarDatosSeguros() {
     const claves = ["zodiaco", "luna", "numero", "chino", "compat", "tarot"];
     const data = {};
     
     claves.forEach(k => {
         try {
-            data[k] = JSON.parse(localStorage.getItem(`astro_${k}`) || "{}");
+            const item = localStorage.getItem(`astro_${k}`);
+            data[k] = item ? JSON.parse(item) : {};
         } catch (e) {
             data[k] = {};
         }
@@ -43,19 +39,21 @@ function cargarDatosSeguros() {
     return data;
 }
 
-/**
- * Organiza la estructura final del objeto de datos
- */
 function mapearEstructuraInforme(nombre, s) {
+    const sol = `${s.zodiaco.nombre || "—"} · ${s.zodiaco.descripcion || ""}`;
+    const num = `${s.numero.numero || "—"} · ${s.numero.texto || ""}`;
+    const taro = `${s.tarot.nombre || "—"} · ${s.tarot.significado || ""}`;
+    const lun = s.luna.signo ? `${s.luna.signo} · ${s.luna.fase}` : "—";
+
     return {
         nombre: nombre || "Usuario AstroVisión",
-        signoSolar: `${s.zodiaco.nombre || "—"} · ${s.zodiaco.descripcion || ""}`,
-        luna: s.luna.signo ? `${s.luna.signo} · ${s.luna.fase}` : "—",
+        signoSolar: sol,
+        luna: lun,
         signoChino: s.chino.animal || "—",
-        numeroVida: `${s.numero.numero || "—"} · ${s.numero.texto || ""}`,
+        numeroVida: num,
         compatibilidades: Array.isArray(s.compat.mejor) ? s.compat.mejor : [],
-        transitos: typeof s.transitosRaw === "string" ? [s.transitosRaw] : s.transitosRaw,
-        cartaDia: `${s.tarot.nombre || "—"} · ${s.tarot.significado || ""}`
+        transitos: Array.isArray(s.transitosRaw) ? s.transitosRaw : [s.transitosRaw],
+        cartaDia: taro
     };
 }
 
@@ -121,6 +119,5 @@ async function exportarAPDF(cnt, nombre) {
     pdf.addImage(imgData, "PNG", 0, 0, w, h);
     pdf.save(nombre);
 }
- 
-   
+
 

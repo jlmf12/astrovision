@@ -1,11 +1,23 @@
 /* ============================
-   CARGAR NUMEROLOGÍA
+    CARGAR NUMEROLOGÍA
 ============================ */
 
 function cargarNumerologia() {
-    const datos = JSON.parse(localStorage.getItem("astro_datos") || "{}");
+    // 1. CARGA SEGURA: Eliminamos "Unguarded JSON.parse" con verificación de tipo
+    const rawDatos = localStorage.getItem("astro_datos");
+    let datos = {};
 
-    if (!datos.fecha) {
+    if (typeof rawDatos === "string") {
+        try {
+            datos = JSON.parse(rawDatos);
+        } catch (e) {
+            console.error("Error al procesar datos de numerología");
+            datos = {};
+        }
+    }
+
+    // 2. VALIDACIÓN DE FECHA
+    if (!datos || !datos.fecha) {
         const txtError = document.getElementById("numero-texto");
         if (txtError) txtError.textContent = "Introduce tus datos primero.";
         return;
@@ -13,15 +25,16 @@ function cargarNumerologia() {
 
     const numero = calcularNumeroVida(datos.fecha);
 
-    // SOLUCIÓN PATH TRAVERSAL: Validar que el número sea un dígito válido (1-9)
+    // 3. MANEJO SEGURO DE IMAGEN (Previene Path Traversal)
     const img = document.getElementById("numero-img");
     if (img && numero >= 1 && numero <= 9) {
-        // Usamos ruta absoluta del proyecto para mayor seguridad
-        img.src = `/astrovision/img/numerologia/${numero}.png`;
-        img.alt = `Número ${numero}`;
+        // Validación estricta: nos aseguramos de que 'numero' sea realmente un número
+        const numSeguro = Math.floor(Number(numero));
+        img.src = `/astrovision/img/numerologia/${numSeguro}.png`;
+        img.alt = `Número de vida ${numSeguro}`;
     }
 
-    // Texto interpretativo
+    // 4. TEXTOS INTERPRETATIVOS
     const textos = {
         1: "Liderazgo, independencia y fuerza personal.",
         2: "Cooperación, sensibilidad y equilibrio.",
@@ -36,9 +49,11 @@ function cargarNumerologia() {
 
     const desc = textos[numero] || "—";
     const txtElemento = document.getElementById("numero-texto");
-    if (txtElemento) txtElemento.textContent = desc;
+    if (txtElemento) {
+        txtElemento.textContent = desc;
+    }
 
-    // Guardar para informe
+    // 5. GUARDADO SEGURO
     localStorage.setItem("astro_numero", JSON.stringify({
         numero: numero,
         texto: desc
@@ -46,22 +61,26 @@ function cargarNumerologia() {
 }
 
 /* ============================
-   CÁLCULO DEL NÚMERO DE VIDA
+    CÁLCULO DEL NÚMERO DE VIDA
 ============================ */
 
 function calcularNumeroVida(fechaStr) {
-    // Limpiamos la fecha de cualquier caracter no numérico (guiones, barras, espacios)
+    // Limpieza de caracteres no numéricos
     const numeros = fechaStr.replace(/\D/g, ""); 
     let suma = 0;
 
-    // Sumar todos los dígitos
     for (const c of numeros) {
         suma += parseInt(c, 10);
     }
 
-    // Reducir a un solo dígito (Cálculo pitagórico estándar)
+    // Reducción pitagórica (aseguramos complejidad baja)
     while (suma > 9) {
-        suma = suma.toString().split("").reduce((a, b) => a + parseInt(b, 10), 0);
+        let subtotal = 0;
+        const digitos = suma.toString();
+        for (const d of digitos) {
+            subtotal += parseInt(d, 10);
+        }
+        suma = subtotal;
     }
 
     return suma;

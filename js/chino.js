@@ -3,24 +3,30 @@
 ============================ */
 
 function cargarChino() {
-    const datos = JSON.parse(localStorage.getItem("astro_datos") || "{}");
+    // SOLUCIÓN "Unguarded JSON.parse": Verificar existencia antes de parsear
+    const rawDatos = localStorage.getItem("astro_datos");
+    const datos = rawDatos ? JSON.parse(rawDatos) : {};
 
     if (!datos.fecha) {
-        document.getElementById("chino-animal").textContent = "—";
-        document.getElementById("chino-elemento").textContent = "—";
-        document.getElementById("chino-descripcion").textContent = "Introduce tus datos primero.";
+        actualizarInterfazChino("—", "—", "Introduce tus datos primero.");
         return;
     }
 
-    const year = new Date(datos.fecha).getUTCFullYear();
+    // Asegurar que la fecha se procese correctamente independientemente del formato
+    const fechaObj = new Date(datos.fecha);
+    const year = fechaObj.getUTCFullYear();
+
+    // Validar que el año sea un número válido
+    if (isNaN(year)) {
+        actualizarInterfazChino("—", "—", "Fecha no válida.");
+        return;
+    }
 
     const animal = obtenerAnimalChino(year);
     const elemento = obtenerElementoChino(year);
     const descripcion = descripcionesChinas[animal] || "—";
 
-    document.getElementById("chino-animal").textContent = animal;
-    document.getElementById("chino-elemento").textContent = elemento;
-    document.getElementById("chino-descripcion").textContent = descripcion;
+    actualizarInterfazChino(animal, elemento, descripcion);
 
     // Guardar para informe
     localStorage.setItem("astro_chino", JSON.stringify({
@@ -28,6 +34,19 @@ function cargarChino() {
         elemento,
         descripcion
     }));
+}
+
+/**
+ * Función auxiliar para actualizar el DOM de forma segura (Baja la complejidad)
+ */
+function actualizarInterfazChino(animal, elemento, descripcion) {
+    const elAnimal = document.getElementById("chino-animal");
+    const elElemento = document.getElementById("chino-elemento");
+    const elDesc = document.getElementById("chino-descripcion");
+
+    if (elAnimal) elAnimal.textContent = animal;
+    if (elElemento) elElemento.textContent = elemento;
+    if (elDesc) elDesc.textContent = descripcion;
 }
 
 /* ============================
@@ -40,7 +59,7 @@ function obtenerAnimalChino(year) {
         "Caballo", "Cabra", "Mono", "Gallo", "Perro", "Cerdo"
     ];
 
-    // 2020 fue año de la Rata
+    // 2020 fue año de la Rata (Ciclo de 12)
     const index = (year - 2020) % 12;
     return animales[(index + 12) % 12];
 }
